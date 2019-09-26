@@ -462,6 +462,7 @@ class AMSJob(SingleJob):
                     if not el.startswith('_'):
                         ret += serialize(el, value[el], indent+2)
 
+                if key.lower() == 'input': end='endinput'
                 ret += ' '*indent + end+'\n'
 
             elif isinstance(value, list):
