@@ -13,6 +13,7 @@ from ...mol.molecule import Molecule
 from ...mol.atom import Atom
 from ...tools.kftools import KFFile
 from ...tools.units import Units
+from .ams import AMSJob
 
 
 
@@ -219,7 +220,7 @@ class SCMJob(SingleJob):
         if s.stdout_redirect:
             ret += ' >"{}"'.format(self._filename('out'))
         ret += '\n\n'
-        return ret
+        return AMSJob._slurm_env(self.settings) + ret
 
 
     def check(self):

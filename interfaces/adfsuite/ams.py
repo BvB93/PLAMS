@@ -390,7 +390,7 @@ class AMSJob(SingleJob):
         if self.settings.runscript.stdout_redirect:
             ret += ' >"{}"'.formatself._filename('out')
         ret += '\n\n'
-        return ret
+        return AMSJob._slurm_env(self.settings) + ret
 
 
     def check(self):
@@ -577,3 +577,29 @@ class AMSJob(SingleJob):
             if isinstance(arg[0], AMSResults):
                 return arg[0].rkfpath(arg[1])
         return str(arg)
+
+
+    @staticmethod
+    def _slurm_env(settings):
+        """Produce a string with environment variables declaration needed for running AMS on a SLURM managed system.
+
+        If the key ``slurm`` is present in ``settings.run`` and it's ``True`` the returned string is of the form:
+
+        ``export SCM_MPIOPTIONS="-n X -N Y\n"
+
+        ``X`` is taken from ``settings.run.cores`` (if not present, falls back to ``settings.runscript.nproc``).
+        ``Y`` is taken from ``settings.run.nodes``
+        """
+
+        if 'slurm' in settings.run and settings.run.slurm is True:
+            slurmenv = ''
+            if 'cores' in settings.run:
+                slurmenv += f'-n {settings.run.cores} '
+            elif 'nproc' in settings.runscript:
+                slurmenv += f'-n {settings.runscript.nproc} '
+            if 'nodes' in settings.run:
+                slurmenv += f'-N {settings.run.nodes} '
+            if slurmenv:
+                return f'export SCM_MPIOPTIONS="{slurmenv}"\n'
+        return ''
+
